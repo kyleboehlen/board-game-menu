@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Board Game Menu</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #00ffff;
+            font-size: 2.5rem;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+
+        .filters {
+            background: #292929;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            margin-bottom: 5px;
+            color: #00ffff;
+            font-weight: 500;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 10px;
+            border: 2px solid #444;
+            border-radius: 5px;
+            background: #1a1a1a;
+            color: #ffffff;
+            font-size: 14px;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: #00ffff;
+            box-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .game-card {
+            background: #292929;
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .game-card:hover {
+            border-color: #00ffff;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+        }
+
+        .game-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #00ffff;
+        }
+
+        .game-basics {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .player-count,
+        .weight {
+            background: #1a1a1a;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
+        .owned-status {
+            font-size: 1.2rem;
+        }
+
+        .details-toggle {
+            background: #00ffff;
+            color: #1a1a1a;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .details-toggle:hover {
+            background: #00cccc;
+        }
+
+        .game-details {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #444;
+        }
+
+        .game-details.expanded {
+            display: block;
+        }
+
+        .detail-section {
+            margin-bottom: 10px;
+        }
+
+        .detail-label {
+            color: #00ffff;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .expansions {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #444;
+        }
+
+        .expansion-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        .expansion-name {
+            flex: 1;
+        }
+
+        .expansion-status {
+            font-size: 1rem;
+        }
+
+        .no-results {
+            text-align: center;
+            color: #666;
+            font-size: 1.2rem;
+            margin-top: 50px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .filters {
+                grid-template-columns: 1fr;
+            }
+
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .game-basics {
+                justify-content: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Board Game Menu</h1>
+
+    <div class="filters">
+        <div class="filter-group">
+            <label for="playerCount">Player Count</label>
+            <select id="playerCount">
+                <option value="">Any</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="weight">Weight</label>
+            <select id="weight">
+                <option value="">Any</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="owned">Owned Status</label>
+            <select id="owned">
+                <option value="">Any</option>
+                <option value="owned">Owned</option>
+                <option value="not-owned">Not Owned</option>
+                <option value="pre-order">Pre-order</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="sort">Sort By</label>
+            <select id="sort">
+                <option value="name">Name (A-Z)</option>
+                <option value="name-desc">Name (Z-A)</option>
+                <option value="weight">Weight (Light to Heavy)</option>
+                <option value="weight-desc">Weight (Heavy to Light)</option>
+                <option value="players">Player Count (Low to High)</option>
+                <option value="players-desc">Player Count (High to Low)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="games-grid" id="gamesContainer">
+        <!-- Games will be populated by JavaScript -->
+    </div>
+
+    <div class="no-results" id="noResults" style="display: none;">
+        No games match your current filters.
+    </div>
+</div>
+
+<script>
+    const gameData = [
+        {
+            name: "Circuit Board",
+            playerCount: "Solo",
+            weight: "Easy+",
+            mechanics: "Puzzle Building",
+            theme: "Electrical Circuits",
+            owned: "✅"
+        },
+        {
+            name: "Warps Edge",
+            playerCount: "Solo",
+            weight: "Medium",
+            mechanics: "Bag Building",
+            theme: "Space",
+            owned: "✅"
+        },
+        {
+            name: "Next Station London",
+            playerCount: "1-4",
+            weight: "Easy",
+            mechanics: "Flip and Write, Route Building",
+            theme: "Managing London's underground network",
+            owned: "✅",
+            expansions: [
+                { name: "Tokyo", owned: "✅" },
+                { name: "Paris", owned: "❌" }
+            ]
+        },
+        {
+            name: "Mage Knight: Ultimate",
+            playerCount: "1-4",
+            weight: "Heavy++",
+            mechanics: "Combat, Exploration, Deck Building, Co-op",
+            theme: "High Fantasy, Crusaders",
+            owned: "✅"
+        },
+        {
+            name: "Heat",
+            playerCount: "1-8",
+            weight: "Medium",
+            mechanics: "Racing",
+            theme: "Early F1",
+            owned: "✅",
+            expansions: [
+                { name: "Heavy Rain", owned: "✅" },
+                { name: "Tunnel Vision", owned: "✅" }
+            ]
+        },
+        {
+            name: "Mastermind",
+            playerCount: "2",
+            weight: "Easy",
+            mechanics: "Puzzle, Deduction",
+            theme: "Abstract",
+            owned: "✅"
+        },
+        {
+            name: "Tranquility",
+            playerCount: "2",
+            weight: "Easy+",
+            mechanics: "Co-op, Puzzle Building, No Communication",
+            theme: "Islands, Sailing",
+            owned: "✅"
+        },
+        {
+            name: "Compile",
+            playerCount: "2",
+            weight: "Easy+",
+            mechanics: "TODO",
+            theme: "Dueling AIs",
+            owned: "✅",
+            expansions: [
+                { name: "Aux", owned: "✅" },
+                { name: "Main 2", owned: "❌" },
+                { name: "Main 2 Aux", owned: "❌" }
+            ]
+        },
+        {
+            name: "Sky Team",
+            playerCount: "2",
+            weight: "Easy/Medium",
+            mechanics: "Co-op, Dice Throwing",
+            theme: "Commercial Airliner",
+            owned: "✅",
+            expansions: [
+                { name: "Turbulence", owned: "✅" }
+            ]
+        },
+        {
+            name: "Chess",
+            playerCount: "2",
+            weight: "Medium",
+            mechanics: "Strategy, Combat",
+            theme: "Classic",
+            owned: "✅"
+        },
+        {
+            name: "Watergate",
+            playerCount: "2",
+            weight: "Medium",
+            mechanics: "Asymmetrical Play",
+            theme: "Watergate scandal",
+            owned: "✅"
+        },
+        {
+            name: "Twilight Struggle",
+            playerCount: "2",
+            weight: "Heavy",
+            mechanics: "Strategy, Wargame, Area Control",
+            theme: "The Cold War",
+            owned: "✅"
+        },
+        {
+            name: "Foundations of Metropolis",
+            playerCount: "2-4",
+            weight: "Easy++",
+            mechanics: "City Building, Economy, Victory Points",
+            theme: "Construction, City Building",
+            owned: "✅"
+        },
+        {
+            name: "Burgle Bros (1st edition)",
+            playerCount: "2-4",
+            weight: "Medium",
+            mechanics: "Exploration, Time Limits, Co-op",
+            theme: "Heisting",
+            owned: "✅"
+        },
+        {
+            name: "Dreadful Meadows",
+            playerCount: "2-4",
+            weight: "Medium",
+            mechanics: "Worker Placement, Tile Placement, Engine Builder, Variable Player Powers",
+            theme: "Spooky candy farming",
+            owned: "✅"
+        },
+        {
+            name: "Brass: Birmingham",
+            playerCount: "2-4",
+            weight: "Heavy",
+            mechanics: "Euro, Resource Management",
+            theme: "Dark, Industrial",
+            owned: "✅"
+        },
+        {
+            name: "Space Empires 4X",
+            playerCount: "2, 4",
+            weight: "Heavy",
+            mechanics: "4X, Combat, Bookkeeping",
+            theme: "Space Fleets",
+            owned: "📦"
+        },
+        {
+            name: "Wyrmspan",
+            playerCount: "2-5",
+            weight: "Medium/Heavy",
+            mechanics: "Engine Building, Drafting",
+            theme: "Dragons, Watercolors",
+            owned: "✅"
+        },
+        {
+            name: "Apiary",
+            playerCount: "2-5",
+            weight: "Medium/Heavy",
+            mechanics: "Worker/Tile Placement, Multi-player Solitaire, Variable Player Powers",
+            theme: "SPACE BEES!!",
+            owned: "✅",
+            expansions: [
+                { name: "Expanded Hive", owned: "✅" }
+            ]
+        },
+        {
+            name: "Sequence",
+            playerCount: "2, 4, 6",
+            weight: "Easy",
+            mechanics: "No Communication, Co-op, Area Control",
+            theme: "Poker, Playing Cards",
+            owned: "✅"
+        },
+        {
+            name: "Cascadia",
+            playerCount: "2-6",
+            weight: "Medium",
+            mechanics: "Multiplayer Solitaire, Hex Placement, Victory Points, Puzzle Building, Drafting",
+            theme: "Nature, Animals",
+            owned: "✅",
+            expansions: [
+                { name: "Landmarks", owned: "✅" }
+            ]
+        },
+        {
+            name: "Everdell: Complete Edition",
+            playerCount: "2-6",
+            weight: "Medium+",
+            mechanics: "Worker Placement, Open Drafting, Tableau Building",
+            theme: "Woodland Creatures",
+            owned: "✅"
+        },
+        {
+            name: "Eclipse: Second Dawn",
+            playerCount: "2-6",
+            weight: "Heavy",
+            mechanics: "4X, Dice Battles, Asymmetric Factions",
+            theme: "Space",
+            owned: "✅"
+        },
+        {
+            name: "It's a Wonderful World",
+            playerCount: "2-7",
+            weight: "Easy/Medium",
+            mechanics: "Drafting, Engine Building",
+            theme: "Futuristic, Empires, Post War Capitalism",
+            owned: "✅",
+            expansions: [
+                { name: "Corruption and Ascension", owned: "✅" }
+            ]
+        },
+        {
+            name: "Dice Throne: Duel",
+            playerCount: "2+",
+            weight: "Medium",
+            mechanics: "Dice Throwing, Combat, Deck Building",
+            theme: "High Fantasy",
+            owned: "✅"
+        },
+        {
+            name: "Monopoly Deal",
+            playerCount: "3",
+            weight: "Easy",
+            mechanics: "Cards, Hand Management, Currency",
+            theme: "Monopoly, Capitalism",
+            owned: "✅"
+        },
+        {
+            name: "The Mind",
+            playerCount: "3-4",
+            weight: "Easy",
+            mechanics: "Co-op, No Communication",
+            theme: "Mind Reading",
+            owned: "✅"
+        },
+        {
+            name: "Mind MGMT",
+            playerCount: "3, 5",
+            weight: "Medium++",
+            mechanics: "Hidden Movement, Deduction, Co-op",
+            theme: "Spies, Espionage, Psychics",
+            owned: "✅"
+        },
+        {
+            name: "Wonderland's War",
+            playerCount: "3-5",
+            weight: "Heavy",
+            mechanics: "Drafting, Bag Building, Variable Player Powers, Combat, Wagering",
+            theme: "War in Wonderland",
+            owned: "✅"
+        },
+        {
+            name: "Acquire",
+            playerCount: "3-6",
+            weight: "Medium",
+            mechanics: "Economic, Area Control",
+            theme: "Hotel Stocks",
+            owned: "✅"
+        },
+        {
+            name: "Dice Throne: Adventures",
+            playerCount: "4",
+            weight: "Medium+",
+            mechanics: "Dice Throwing, Combat, Deck Building, Co-op, Legacy",
+            theme: "High Fantasy",
+            owned: "✅",
+            expansions: [
+                { name: "Outcasts", owned: "📦" }
+            ]
+        },
+        {
+            name: "Kemet: Blood and Sand",
+            playerCount: "4",
+            weight: "Heavy",
+            mechanics: "War Game,Dudes on a Map",
+            theme: "Ancient Egypt",
+            owned: "✅"
+        },
+        {
+            name: "Phase 10",
+            playerCount: "4-5",
+            weight: "Easy",
+            mechanics: "Rummy, Cards",
+            theme: "N/A",
+            owned: "✅"
+        },
+        {
+            name: "Go Low",
+            playerCount: "4-6",
+            weight: "Easy",
+            mechanics: "Cards",
+            theme: "N/A",
+            owned: "✅"
+        },
+        {
+            name: "Cover Your Assets",
+            playerCount: "4-6",
+            weight: "Easy",
+            mechanics: "Party, Cards",
+            theme: "Money, Silly",
+            owned: "✅"
+        },
+        {
+            name: "Libertalia: Winds of Galecrest",
+            playerCount: "4-6",
+            weight: "Easy/Medium",
+            mechanics: "Backstabbing, Hidden Cards, Loot",
+            theme: "Pirates, Light",
+            owned: "✅"
+        },
+        {
+            name: "Balderdash",
+            playerCount: "4-6+",
+            weight: "Easy",
+            mechanics: "Party, Bluffing",
+            theme: "Pop Culture",
+            owned: "✅"
+        },
+        {
+            name: "Codenames",
+            playerCount: "4, 6, 8",
+            weight: "Easy",
+            mechanics: "Party, Deduction, Word Game",
+            theme: "Spies",
+            owned: "✅"
+        },
+        {
+            name: "Pit",
+            playerCount: "6-8",
+            weight: "Easy",
+            mechanics: "Chaotic, Negotiation, Hidden Cards",
+            theme: "Markets",
+            owned: "✅"
+        },
+        {
+            name: "One Night Werewolf: Ultimate",
+            playerCount: "6-8+",
+            weight: "Easy++",
+            mechanics: "Social Deduction",
+            theme: "Supernatural",
+            owned: "✅"
+        },
+        {
+            name: "Blood on the Clocktower",
+            playerCount: "9-16+",
+            weight: "Medium",
+            mechanics: "Social Deduction, Bluffing",
+            theme: "Supernatural",
+            owned: "✅"
+        },
+        {
+            name: "Inis",
+            playerCount: "3-4",
+            weight: "Medium+",
+            mechanics: "Dudes on a map, area control",
+            theme: "Celtic lore",
+            owned: "❌"
+        },
+        {
+            name: "Raptor",
+            playerCount: "2",
+            weight: "Easy++",
+            mechanics: "Asymmetrical Play",
+            theme: "Raptors vs Scientists",
+            owned: "❌"
+        },
+        {
+            name: "Everdell Silverfrost",
+            playerCount: "2-4",
+            weight: "Medium",
+            mechanics: "Worker Placement, Tableau Builder",
+            theme: "Edge of Everdell",
+            owned: "❌"
+        },
+        {
+            name: "Sky rise",
+            playerCount: "2-4",
+            weight: "Medium",
+            mechanics: "Area Control, Auction",
+            theme: "City Building",
+            owned: "❌"
+        },
+        {
+            name: "War Chest",
+            playerCount: "2, 4",
+            weight: "Medium",
+            mechanics: "Abstract Strategy, Wargame, Area Control, Bag Builder",
+            theme: "Medieval War",
+            owned: "❌"
+        },
+        {
+            name: "Stationfall",
+            playerCount: "3-7",
+            weight: "Heavy",
+            mechanics: "Hidden Roles, Deduction, Variable Player Powers",
+            theme: "Escape the space station or... imminent destruction!",
+            owned: "❌"
+        },
+        {
+            name: "Dictator for Life",
+            playerCount: "4-6",
+            weight: "??",
+            mechanics: "Card Game",
+            theme: "Roman Generals",
+            owned: "❌"
+        }
+    ];
+
+    const weightHierarchy = ['Easy', 'Easy+', 'Easy++', 'Easy/Medium', 'Medium', 'Medium+', 'Medium++', 'Medium/Heavy', 'Heavy', 'Heavy+', 'Heavy++', '??'];
+
+    function parsePlayerCount(playerCount) {
+        if (playerCount === 'Solo') return { min: 1, max: 1 };
+        if (playerCount.includes('+')) {
+            const base = parseInt(playerCount.replace('+', ''));
+            return { min: base, max: 20 }; // Assuming max for open-ended
+        }
+        if (playerCount.includes('-')) {
+            const [min, max] = playerCount.split('-').map(num => parseInt(num));
+            return { min, max };
+        }
+        if (playerCount.includes(', ')) {
+            const counts = playerCount.split(', ').map(num => parseInt(num));
+            return { min: Math.min(...counts), max: Math.max(...counts), specific: counts };
+        }
+        const num = parseInt(playerCount);
+        return { min: num, max: num };
+    }
+
+    function canAccommodatePlayers(game, targetCount) {
+        const playerRange = parsePlayerCount(game.playerCount);
+        if (playerRange.specific) {
+            return playerRange.specific.includes(targetCount);
+        }
+        return targetCount >= playerRange.min && targetCount <= playerRange.max;
+    }
+
+    function getOwnedStatus(owned) {
+        if (owned === '✅') return 'owned';
+        if (owned === '❌') return 'not-owned';
+        if (owned === '📦') return 'pre-order';
+        return 'owned'; // Default for mixed ownership
+    }
+
+    function populateFilters() {
+        const playerCountSelect = document.getElementById('playerCount');
+        const weightSelect = document.getElementById('weight');
+
+        // Populate player count options
+        for (let i = 1; i <= 16; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = i + (i === 1 ? ' Player' : ' Players');
+            playerCountSelect.appendChild(option);
+        }
+
+        // Populate weight options
+        weightHierarchy.forEach(weight => {
+            if (gameData.some(game => game.weight === weight)) {
+                const option = document.createElement('option');
+                option.value = weight;
+                option.textContent = weight;
+                weightSelect.appendChild(option);
+            }
+        });
+    }
+
+    function createGameCard(game) {
+        const card = document.createElement('div');
+        card.className = 'game-card';
+
+        const expansionsHtml = game.expansions ? `
+                <div class="expansions">
+                    <div class="detail-label">Expansions:</div>
+                    ${game.expansions.map(exp => `
+                        <div class="expansion-item">
+                            <span class="expansion-name">${exp.name}</span>
+                            <span class="expansion-status">${exp.owned}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : '';
+
+        card.innerHTML = `
+                <div class="game-title">${game.name}</div>
+                <div class="game-basics">
+                    <span class="player-count">👥 ${game.playerCount}</span>
+                    <span class="weight">⚖️ ${game.weight}</span>
+                    <span class="owned-status">${game.owned}</span>
+                </div>
+                <button class="details-toggle" onclick="toggleDetails(this)">
+                    Show Details ▼
+                </button>
+                <div class="game-details">
+                    <div class="detail-section">
+                        <span class="detail-label">Mechanics:</span>
+                        <span>${game.mechanics}</span>
+                    </div>
+                    <div class="detail-section">
+                        <span class="detail-label">Theme:</span>
+                        <span>${game.theme}</span>
+                    </div>
+                    ${expansionsHtml}
+                </div>
+            `;
+
+        return card;
+    }
+
+    function toggleDetails(button) {
+        const details = button.nextElementSibling;
+        const isExpanded = details.classList.contains('expanded');
+
+        if (isExpanded) {
+            details.classList.remove('expanded');
+            button.textContent = 'Show Details ▼';
+        } else {
+            details.classList.add('expanded');
+            button.textContent = 'Hide Details ▲';
+        }
+    }
+
+    function sortGames(games, sortBy) {
+        return games.sort((a, b) => {
+            switch (sortBy) {
+                case 'name':
+                    return a.name.localeCompare(b.name);
+                case 'name-desc':
+                    return b.name.localeCompare(a.name);
+                case 'weight':
+                    return weightHierarchy.indexOf(a.weight) - weightHierarchy.indexOf(b.weight);
+                case 'weight-desc':
+                    return weightHierarchy.indexOf(b.weight) - weightHierarchy.indexOf(a.weight);
+                case 'players':
+                    const aRange = parsePlayerCount(a.playerCount);
+                    const bRange = parsePlayerCount(b.playerCount);
+                    return aRange.min - bRange.min;
+                case 'players-desc':
+                    const aRangeDesc = parsePlayerCount(a.playerCount);
+                    const bRangeDesc = parsePlayerCount(b.playerCount);
+                    return bRangeDesc.max - aRangeDesc.max;
+                default:
+                    return 0;
+            }
+        });
+    }
+
+    function renderGames() {
+        const container = document.getElementById('gamesContainer');
+        const noResults = document.getElementById('noResults');
+
+        const playerCountFilter = document.getElementById('playerCount').value;
+        const weightFilter = document.getElementById('weight').value;
+        const ownedFilter = document.getElementById('owned').value;
+        const sortBy = document.getElementById('sort').value;
+
+        let filteredGames = gameData.filter(game => {
+            // Player count filter
+            if (playerCountFilter && !canAccommodatePlayers(game, parseInt(playerCountFilter))) {
+                return false;
+            }
+
+            // Weight filter
+            if (weightFilter && game.weight !== weightFilter) {
+                return false;
+            }
+
+            // Owned filter
+            if (ownedFilter && getOwnedStatus(game.owned) !== ownedFilter) {
+                return false;
+            }
+
+            return true;
+        });
+
+        filteredGames = sortGames(filteredGames, sortBy);
+
+        container.innerHTML = '';
+
+        if (filteredGames.length === 0) {
+            noResults.style.display = 'block';
+        } else {
+            noResults.style.display = 'none';
+            filteredGames.forEach(game => {
+                container.appendChild(createGameCard(game));
+            });
+        }
+    }
+
+    // Event listeners
+    document.getElementById('playerCount').addEventListener('change', renderGames);
+    document.getElementById('weight').addEventListener('change', renderGames);
+    document.getElementById('owned').addEventListener('change', renderGames);
+    document.getElementById('sort').addEventListener('change', renderGames);
+
+    // Initialize
+    populateFilters();
+    renderGames();
+
+    // Make toggleDetails global for onclick handlers
+    window.toggleDetails = toggleDetails;
+</script>
+</body>
+</html>
